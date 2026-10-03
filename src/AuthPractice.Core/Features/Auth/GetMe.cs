@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using AuthPractice.Contracts;
-using AuthPractice.Core.Abstractions;
+using Core.Abstractions;
+using Framework.Endpoints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -11,16 +12,20 @@ namespace AuthPractice.Core.Features.Auth;
 public sealed class GetMeEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) =>
-        app.MapGet("auth/me", (ClaimsPrincipal user, GetMeHandler handler) => Results.Ok(handler.Handle(user)))
+        app.MapGet("auth/me", async (ClaimsPrincipal user, GetMeHandler handler, CancellationToken ct) =>
+                ResultResponse.Ok(await handler.Handle(new GetMeQuery(user), ct)))
             // Без этого endpoint публичный. С ним — UseAuthorization вызовет наш handler
             .RequireAuthorization();
 }
 
-public sealed class GetMeHandler
+// ClaimsPrincipal = HttpContext.User, его заполнил TestAuthenticationHandler
+public sealed record GetMeQuery(ClaimsPrincipal User) : IQuery;
+
+public sealed class GetMeHandler : IQueryHandler<MeResponse, GetMeQuery>
 {
-    // ClaimsPrincipal = HttpContext.User, его заполнил TestAuthenticationHandler
-    public MeResponse Handle(ClaimsPrincipal user) => new(
-        user.Identity?.Name,
-        user.Identity?.AuthenticationType,
-        user.Claims.Select(c => new ClaimDto(c.Type, c.Value)).ToList());
+    public Task<MeResponse> Handle(GetMeQuery query, CancellationToken cancellationToken = default) =>
+        Task.FromResult(new MeResponse(
+            query.User.Identity?.Name,
+            query.User.Identity?.AuthenticationType,
+            query.User.Claims.Select(c => new ClaimDto(c.Type, c.Value)).ToList()));
 }

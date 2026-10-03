@@ -1,3 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Domain: сущности и правила. Не ссылается ни на один слой -->
+  <!-- Domain: сущности и правила. Из внешнего — только SharedKernel (Error, Errors) -->
+  <ItemGroup>
+    <PackageReference Include="SharedKernel" Version="0.0.2" />
+  </ItemGroup>
 </Project>

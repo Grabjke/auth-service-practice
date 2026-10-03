@@ -4,6 +4,8 @@ services:
     build:
       context: .
       dockerfile: src/AuthPractice.Web/Dockerfile
+      secrets:
+        - nugetconfig
     environment:
       ASPNETCORE_ENVIRONMENT: Development
     ports:
@@ -17,3 +19,8 @@ services:
       - backend
     ports:
       - "3000:80"     # UI: http://localhost:3000
+
+secrets:
+  # Локальные креды NuGet для приватного фида "github"; в репо не коммитятся
+  nugetconfig:
+    file: ${HOME}/.nuget/NuGet/NuGet.Config

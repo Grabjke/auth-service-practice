@@ -2,7 +2,6 @@
   <!-- Web: хост приложения. Собирает все слои и настраивает pipeline -->
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.6" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AuthPractice.Core\AuthPractice.Core.csproj" />

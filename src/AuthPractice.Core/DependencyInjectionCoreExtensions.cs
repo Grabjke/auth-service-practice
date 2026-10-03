@@ -1,19 +1,19 @@
-using AuthPractice.Core.Abstractions;
-using AuthPractice.Core.Features.Auth;
-using AuthPractice.Core.Features.Ping;
+using Core.Abstractions;
+using Framework.Endpoints;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AuthPractice.Core;
 
 public static class DependencyInjectionCoreExtensions
 {
-    // Регистрация всего слоя Core: endpoints + handlers
+    // Регистрация всего слоя Core
     public static IServiceCollection AddCore(this IServiceCollection services)
     {
-        services.AddEndpoints(typeof(DependencyInjectionCoreExtensions).Assembly);
+        var assembly = typeof(DependencyInjectionCoreExtensions).Assembly;
 
-        services.AddScoped<PingHandler>();
-        services.AddScoped<GetMeHandler>();
+        services
+            .AddEndpoints(assembly)  // все IEndpoint из сборки (Framework)
+            .AddHandlers(assembly);  // все IQueryHandler/ICommandHandler (Core, через Scrutor)
 
         return services;
     }
