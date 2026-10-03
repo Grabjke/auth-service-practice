@@ -1,0 +1,19 @@
+services:
+  # ASP.NET Core API (внутри контейнера слушает 8080)
+  backend:
+    build:
+      context: .
+      dockerfile: src/AuthPractice.Web/Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+    ports:
+      - "8080:8080"   # swagger: http://localhost:8080/swagger
+
+  # React (nginx): статика + прокси /api -> backend
+  client:
+    build:
+      context: ./client
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"     # UI: http://localhost:3000

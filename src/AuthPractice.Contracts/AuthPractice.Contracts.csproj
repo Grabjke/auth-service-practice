@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Contracts: DTO, которыми API обменивается с клиентом -->
+</Project>

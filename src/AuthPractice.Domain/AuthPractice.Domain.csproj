@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Domain: сущности и правила. Не ссылается ни на один слой -->
+</Project>

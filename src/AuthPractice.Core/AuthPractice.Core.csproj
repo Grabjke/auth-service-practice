@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Core: фичи (endpoints + handlers). Знает про Domain и Contracts -->
+  <ItemGroup>
+    <!-- Нужен для IEndpointRouteBuilder, Results и т.п. -->
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AuthPractice.Domain\AuthPractice.Domain.csproj" />
+    <ProjectReference Include="..\AuthPractice.Contracts\AuthPractice.Contracts.csproj" />
+  </ItemGroup>
+</Project>

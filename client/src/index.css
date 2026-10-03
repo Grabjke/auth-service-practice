@@ -1,0 +1,16 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color-scheme: light dark;
+}
+main {
+  max-width: 720px;
+  margin: 40px auto;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+input { padding: 6px 8px; min-width: 260px; }
+button { padding: 6px 12px; cursor: pointer; }
+pre { padding: 12px; border: 1px solid #8884; border-radius: 6px; overflow-x: auto; }
