@@ -1,4 +1,5 @@
-# Сборка из корня репозитория:  docker build -f src/AuthPractice.Web/Dockerfile .
+# Сборка из корня репозитория:
+#   docker build --secret id=nugetconfig,src=$HOME/.nuget/NuGet/NuGet.Config -f src/AuthPractice.Web/Dockerfile .
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
 USER $APP_UID
 WORKDIR /app
@@ -14,7 +15,10 @@ COPY ["src/AuthPractice.Core/AuthPractice.Core.csproj", "src/AuthPractice.Core/"
 COPY ["src/AuthPractice.Contracts/AuthPractice.Contracts.csproj", "src/AuthPractice.Contracts/"]
 COPY ["src/AuthPractice.Domain/AuthPractice.Domain.csproj", "src/AuthPractice.Domain/"]
 COPY ["src/AuthPractice.Infrastructure/AuthPractice.Infrastructure.csproj", "src/AuthPractice.Infrastructure/"]
-RUN dotnet restore "src/AuthPractice.Web/AuthPractice.Web.csproj"
+# Креды приватного фида "github" (пакеты из Grabjke/shared) передаются как BuildKit secret —
+# PAT не попадает в слои образа. compose.yaml пробрасывает ~/.nuget/NuGet/NuGet.Config
+RUN --mount=type=secret,id=nugetconfig,target=/root/.nuget/NuGet/NuGet.Config \
+    dotnet restore "src/AuthPractice.Web/AuthPractice.Web.csproj"
 COPY src/ src/
 RUN dotnet publish "src/AuthPractice.Web/AuthPractice.Web.csproj" -c $BUILD_CONFIGURATION --no-restore -o /app/publish /p:UseAppHost=false
 

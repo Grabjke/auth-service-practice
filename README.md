@@ -19,6 +19,19 @@ client/                        — React (Vite + TS)
 - `main` — каркас слоёв, публичный `GET /api/ping`, Docker.
 - `practice/auth-handler` — самописные `AuthenticationHandler` + `Options` + регистрация в DI и защищённый endpoint.
 
+## Пакеты
+
+Общие библиотеки из [Grabjke/shared](https://github.com/Grabjke/shared) (GitHub Packages):
+`SharedKernel` (Domain), `Core` + `Framework` (Core-слой: `IEndpoint`, `IQueryHandler`, `ResultResponse`, `ExceptionMiddleware`).
+
+Нужен PAT с `read:packages` в пользовательском конфиге (не в репо):
+
+```bash
+dotnet nuget update source github \
+  --username Grabjke --password <PAT> --store-password-in-clear-text \
+  --configfile ~/.nuget/NuGet/NuGet.Config
+```
+
 ## Запуск в Docker
 
 ```bash

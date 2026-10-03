@@ -1,11 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Core: фичи (endpoints + handlers). Знает про Domain и Contracts -->
   <ItemGroup>
-    <!-- Нужен для IEndpointRouteBuilder, Results и т.п. -->
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\AuthPractice.Domain\AuthPractice.Domain.csproj" />
     <ProjectReference Include="..\AuthPractice.Contracts\AuthPractice.Contracts.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- Core: IQuery/ICommand + хендлеры, AddHandlers (Scrutor) -->
+    <PackageReference Include="Core" Version="0.0.2" />
+    <!-- Framework: IEndpoint, AddEndpoints/MapEndpoints, ResultResponse, ExceptionMiddleware -->
+    <PackageReference Include="Framework" Version="0.0.4" />
   </ItemGroup>
 </Project>
