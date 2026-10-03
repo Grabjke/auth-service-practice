@@ -1,4 +1,5 @@
 using AuthPractice.Core.Abstractions;
+using AuthPractice.Core.Features.Auth;
 using AuthPractice.Core.Features.Ping;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,6 +13,7 @@ public static class DependencyInjectionCoreExtensions
         services.AddEndpoints(typeof(DependencyInjectionCoreExtensions).Assembly);
 
         services.AddScoped<PingHandler>();
+        services.AddScoped<GetMeHandler>();
 
         return services;
     }
