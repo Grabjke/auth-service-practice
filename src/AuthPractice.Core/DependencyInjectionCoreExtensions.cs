@@ -1,3 +1,4 @@
+using AuthPractice.Core.Auth;
 using Core.Abstractions;
 using Framework.Endpoints;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,12 @@ public static class DependencyInjectionCoreExtensions
         services
             .AddEndpoints(assembly)  // все IEndpoint из сборки (Framework)
             .AddHandlers(assembly);  // все IQueryHandler/ICommandHandler (Core, через Scrutor)
+
+        // Общая проверка пароля для cookie- и JWT-логина
+        services.AddScoped<UserCredentialsChecker>();
+
+        // Текущий пользователь запроса: Scoped (один на запрос), заполняет UserScopeDataMiddleware
+        services.AddScoped<UserScopeData>();
 
         return services;
     }

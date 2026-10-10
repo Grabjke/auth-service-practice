@@ -2,5 +2,7 @@
   <!-- Domain: сущности и правила. Из внешнего — только SharedKernel (Error, Errors) -->
   <ItemGroup>
     <PackageReference Include="SharedKernel" Version="0.0.2" />
+    <!-- IdentityUser<TKey>: User наследует базовую сущность Identity (без ASP.NET и EF) -->
+    <PackageReference Include="Microsoft.Extensions.Identity.Stores" Version="9.0.9" />
   </ItemGroup>
 </Project>

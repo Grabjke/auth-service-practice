@@ -1,31 +1,41 @@
-using System.Security.Claims;
 using AuthPractice.Contracts;
+using AuthPractice.Core.Auth;
 using Core.Abstractions;
 using Framework.Endpoints;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
 namespace AuthPractice.Core.Features.Auth;
 
-// GET /api/auth/me — нужен любой аутентифицированный пользователь
+// GET /api/auth/me — нужен любой аутентифицированный пользователь: валидная auth-cookie ИЛИ Bearer-токен
 public sealed class GetMeEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) =>
-        app.MapGet("auth/me", async (ClaimsPrincipal user, GetMeHandler handler, CancellationToken ct) =>
-                ResultResponse.Ok(await handler.Handle(new GetMeQuery(user), ct)))
-            // Без этого endpoint публичный. С ним — UseAuthorization вызовет наш handler
-            .RequireAuthorization();
+        app.MapGet("auth/me", async (GetMeHandler handler, CancellationToken ct) =>
+                ResultResponse.Ok(await handler.Handle(new GetMeQuery(), ct)))
+            // Явно перечисляем схемы: без этого работала бы только default (cookie).
+            // Авторизация аутентифицирует обеими и объединяет identities в один HttpContext.User.
+            // Ни cookie, ни валидного токена → 401 (cookie: вместо редиректа, Bearer: + WWW-Authenticate)
+            .RequireAuthorization(new AuthorizeAttribute { AuthenticationSchemes = AuthSchemes.CookieOrBearer });
 }
 
-// ClaimsPrincipal = HttpContext.User, его заполнил TestAuthenticationHandler
-public sealed record GetMeQuery(ClaimsPrincipal User) : IQuery;
+public sealed record GetMeQuery : IQuery;
 
-public sealed class GetMeHandler : IQueryHandler<MeResponse, GetMeQuery>
+// HttpContext.User — его восстановил CookieAuthenticationHandler (из cookie) или JwtBearerHandler (из токена)
+public sealed class GetMeHandler(IHttpContextAccessor httpContextAccessor) : IQueryHandler<MeResponse, GetMeQuery>
 {
-    public Task<MeResponse> Handle(GetMeQuery query, CancellationToken cancellationToken = default) =>
-        Task.FromResult(new MeResponse(
-            query.User.Identity?.Name,
-            query.User.Identity?.AuthenticationType,
-            query.User.Claims.Select(c => new ClaimDto(c.Type, c.Value)).ToList()));
+    public Task<MeResponse> Handle(GetMeQuery query, CancellationToken cancellationToken = default)
+    {
+        var user = httpContextAccessor.HttpContext!.User;
+
+        return Task.FromResult(new MeResponse(
+            user.GetUserId(),
+            user.GetUserName(),
+            user.GetEmail(),
+            user.GetRoles(),
+            user.Identity?.AuthenticationType,
+            user.Claims.Select(c => new ClaimDto(c.Type, c.Value)).ToList()));
+    }
 }

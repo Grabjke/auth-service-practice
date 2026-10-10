@@ -1,5 +1,22 @@
 services:
-  # ASP.NET Core API (внутри контейнера слушает 8080)
+  # Postgres для AppIdentityDbContext (с хоста доступен на localhost:5432 — для запуска бэка из IDE)
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: auth_practice
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d auth_practice"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  # ASP.NET Core API (внутри контейнера слушает 8080). При старте накатывает миграции
   backend:
     build:
       context: .
@@ -8,6 +25,10 @@ services:
         - nugetconfig
     environment:
       ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__IdentityDb: Host=postgres;Port=5432;Database=auth_practice;Username=postgres;Password=postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - "8080:8080"   # swagger: http://localhost:8080/swagger
 
@@ -19,6 +40,9 @@ services:
       - backend
     ports:
       - "3000:80"     # UI: http://localhost:3000
+
+volumes:
+  postgres-data:
 
 secrets:
   # Локальные креды NuGet для приватного фида "github"; в репо не коммитятся

@@ -14,3 +14,21 @@ main {
 input { padding: 6px 8px; min-width: 260px; }
 button { padding: 6px 12px; cursor: pointer; }
 pre { padding: 12px; border: 1px solid #8884; border-radius: 6px; overflow-x: auto; }
+.card { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid #8884; border-radius: 6px; }
+.card h2 { margin: 0; font-size: 1.1rem; }
+.card button { align-self: flex-start; }
+.tabs button[aria-selected="true"] { font-weight: 600; outline: 2px solid currentColor; }
+.muted { margin: 0; opacity: 0.7; }
+.token { display: block; padding: 8px; border: 1px solid #8884; border-radius: 6px; word-break: break-all; font-size: 0.8rem; }
+.header { justify-content: space-between; }
+.header h1 { margin: 0; }
+.badge { padding: 4px 10px; border: 1px solid #8884; border-radius: 999px; font-size: 0.85rem; }
+.header h2 { margin: 0; }
+.nav a { padding: 4px 10px; border-radius: 6px; text-decoration: none; color: inherit; border: 1px solid transparent; }
+.nav a.active { border-color: currentColor; font-weight: 600; }
+.card h3 { margin: 0; font-size: 1rem; }
+.props { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin: 0; }
+.props dt { opacity: 0.7; }
+.props dd { margin: 0; word-break: break-all; }
+.ok { color: #2e8b57; }
+.warn { color: #d9822b; }

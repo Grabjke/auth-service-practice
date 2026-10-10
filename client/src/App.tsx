@@ -1,55 +1,51 @@
-import { useState } from 'react'
-import { request, type ApiResult } from './api/client'
+import { NavLink, Route, Routes } from "react-router";
+import { useAuthMode, useAuthStore } from "./auth/authStore";
+import { UserBadge } from "./components/UserBadge";
+import { HomePage } from "./pages/HomePage";
+import { ProfilePage } from "./pages/ProfilePage";
 
-// Должно совпадать с TestAuthentication:HeaderName в appsettings.json бэка
-const TOKEN_HEADER = 'X-Test-Token'
-
-// Токены из appsettings.json (+ один неверный, чтобы увидеть AuthenticateResult.Fail)
-const PRESETS = ['', 'user-token', 'admin-token', 'wrong-token']
-
+// Каркас: шапка (навигация, пользователь, схема) + страницы
 export default function App() {
-  const [token, setToken] = useState('user-token')
-  const [result, setResult] = useState<ApiResult | null>(null)
-
-  // Отправляем запрос; если токен задан — кладём его в заголовок
-  const send = async (path: string) => {
-    const headers: HeadersInit = token ? { [TOKEN_HEADER]: token } : {}
-    setResult(await request(path, { headers }))
-  }
+  const mode = useAuthMode();
+  const setMode = useAuthStore((s) => s.setMode);
 
   return (
     <main>
-      <h1>Auth Practice</h1>
+      <header className="row header">
+        <h1>Auth Practice</h1>
+        <UserBadge />
+      </header>
 
-      <div className="row">
-        <label>
-          {TOKEN_HEADER}:{' '}
-          <input value={token} onChange={(e) => setToken(e.target.value)} placeholder="без токена" />
-        </label>
-      </div>
-      <div className="row">
-        {PRESETS.map((p) => (
-          <button key={p || 'none'} onClick={() => setToken(p)}>
-            {p || 'без токена'}
-          </button>
-        ))}
+      <nav className="row nav">
+        <NavLink to="/" end>
+          Главная
+        </NavLink>
+        <NavLink to="/profile">Профиль</NavLink>
+      </nav>
+
+      {/* Схема хранится в сторе: страницы ходят на бэк тем же способом */}
+      <div className="row tabs" role="tablist">
+        <span>Схема:</span>
+        <button
+          role="tab"
+          aria-selected={mode === "cookie"}
+          onClick={() => setMode("cookie")}
+        >
+          Cookie (веб)
+        </button>
+        <button
+          role="tab"
+          aria-selected={mode === "jwt"}
+          onClick={() => setMode("jwt")}
+        >
+          JWT Bearer (API-клиент)
+        </button>
       </div>
 
-      <div className="row">
-        {/* публичный — handler вернёт NoResult, но endpoint всё равно ответит 200 */}
-        <button onClick={() => send('/api/ping')}>GET /api/ping</button>
-        {/* нужен любой валидный токен, иначе 401 */}
-        <button onClick={() => send('/api/auth/me')}>GET /api/auth/me</button>
-        {/* нужна роль admin: user-token → 403 */}
-        <button onClick={() => send('/api/auth/admin')}>GET /api/auth/admin</button>
-      </div>
-
-      {result && (
-        <pre>
-          {`HTTP ${result.status}\n`}
-          {JSON.stringify(result.body, null, 2)}
-        </pre>
-      )}
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/profile" element={<ProfilePage />} />
+      </Routes>
     </main>
-  )
+  );
 }

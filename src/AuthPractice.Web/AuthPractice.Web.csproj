@@ -2,6 +2,11 @@
   <!-- Web: хост приложения. Собирает все слои и настраивает pipeline -->
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
+    <!-- Нужен dotnet ef (миграции генерируются с этим проектом как startup) -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.9">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AuthPractice.Core\AuthPractice.Core.csproj" />

@@ -1,3 +1,4 @@
+using AuthPractice.Infrastructure.Database;
 using AuthPractice.Web.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,9 +8,12 @@ builder.Services.AddConfiguration(builder.Configuration);
 
 var app = builder.Build();
 
-// 2. Настраиваем pipeline (middleware + маршруты)
+// 2. Накатываем миграции AppIdentityDbContext в Postgres
+await app.Services.ApplyMigrationsAsync();
+
+// 3. Настраиваем pipeline (middleware + маршруты)
 app.Configure();
 
-app.Run();
+await app.RunAsync();
 
 public partial class Program;

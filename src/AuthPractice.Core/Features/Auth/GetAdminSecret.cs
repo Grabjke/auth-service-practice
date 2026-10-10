@@ -6,7 +6,8 @@ using Microsoft.AspNetCore.Routing;
 namespace AuthPractice.Core.Features.Auth;
 
 // GET /api/auth/admin — только роль admin.
-// user-токен → 403 (аутентифицирован, но нет прав), без токена → 401
+// роль user → 403 (аутентифицирован, но нет прав), без cookie/токена → 401.
+// Схемы (cookie + Bearer) заданы в самой политике AdminOnly
 public sealed class GetAdminSecretEndpoint : IEndpoint
 {
     public void MapEndpoint(IEndpointRouteBuilder app) =>

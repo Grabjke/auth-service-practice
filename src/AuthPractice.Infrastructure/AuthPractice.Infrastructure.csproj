@@ -4,6 +4,16 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
   <ItemGroup>
+    <!-- IdentityDbContext + UserStore/RoleStore поверх EF Core -->
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.9" />
+    <!-- JWT Bearer: вторая (именованная) схема аутентификации — JwtBearerHandler + TokenValidationParameters -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.9" />
+    <!-- JwtSecurityTokenHandler (DefaultMapInboundClaims) / JsonWebTokenHandler — выпуск токенов.
+         Приходит транзитивно с JwtBearer, указываем явно, т.к. используем напрямую -->
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\AuthPractice.Core\AuthPractice.Core.csproj" />
   </ItemGroup>
 </Project>
