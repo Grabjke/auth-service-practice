@@ -1,92 +1,33 @@
-import { useState, type FormEvent } from "react";
-import { postJson, request, type ApiResult } from "../api/client";
-import { authGet } from "../auth/authFetch";
-import { useAuthMode, useAuthStore } from "../auth/authStore";
+import { useState } from "react";
+import { Link } from "react-router";
+import { request, type ApiResult } from "../api/client";
+import { apiFetch } from "../api/http";
+import { useAuthMode, useIsAuthenticated } from "../auth/authStore";
 import { JwtSessionPanel } from "../components/JwtSessionPanel";
 
-export function HomePage() {
-  const [userName, setUserName] = useState("alice");
-  const [email, setEmail] = useState("alice@example.com");
-  const [password, setPassword] = useState("secret123");
-  const mode = useAuthMode(); // переключатель — в шапке (App), общий для всех страниц
-  const [result, setResult] = useState<ApiResult | null>(null);
-  // JWT-сессия живёт в zustand-сторе (auth/authStore.ts) — доступна из любого компонента
-  const loginWithJwt = useAuthStore((s) => s.loginWithJwt);
+const PARALLEL_PATHS = ["/api/auth/me", "/api/users/me", "/api/auth/admin"];
 
-  // Регистрация: создаёт пользователя с ролью user, ни cookie, ни токен не выдаёт
-  const register = async (e: FormEvent) => {
-    e.preventDefault();
+// Песочница запросов. В режиме jwt все запросы идут через apiFetch (перехватчик 401 → refresh → повтор)
+export function HomePage() {
+  const mode = useAuthMode();
+  const isJwtUser = useIsAuthenticated();
+  const [result, setResult] = useState<unknown>(null);
+
+  const get = async (path: string) => setResult(await apiFetch(path));
+
+  // Испорть подпись / сбрось access и жми: три 401 → ОДИН /refresh → три повтора
+  const parallel = async () => {
+    const responses = await Promise.all(PARALLEL_PATHS.map((p) => apiFetch(p)));
     setResult(
-      await postJson("/api/auth/register", { userName, email, password }),
+      Object.fromEntries(
+        PARALLEL_PATHS.map((p, i) => [p, `HTTP ${responses[i].status}`]),
+      ),
     );
   };
 
-  // cookie: бэк ставит HttpOnly cookie "auth" (в JS её не видно — смотри DevTools → Application)
-  // jwt: бэк возвращает accessToken + expiresAt в теле, без Set-Cookie
-  const login = async (e: FormEvent) => {
-    e.preventDefault();
-
-    if (mode === "cookie") {
-      setResult(await postJson("/api/auth/login", { email, password }));
-      return;
-    }
-
-    setResult(await loginWithJwt(email, password));
-  };
-
-  const get = async (path: string) => setResult(await authGet(path));
-
   return (
     <>
-      <form className="card" onSubmit={register}>
-        <h2>Регистрация</h2>
-        <input
-          value={userName}
-          onChange={(e) => setUserName(e.target.value)}
-          placeholder="username"
-          autoComplete="username"
-        />
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="email"
-          type="email"
-          autoComplete="email"
-        />
-        <input
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="password"
-          type="password"
-          autoComplete="new-password"
-        />
-        <button type="submit">POST /api/auth/register</button>
-      </form>
-
-      <form className="card" onSubmit={login}>
-        <h2>Логин {mode === "cookie" ? "(cookie)" : "(JWT)"}</h2>
-        <input
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="email"
-          type="email"
-          autoComplete="email"
-        />
-        <input
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="password"
-          type="password"
-          autoComplete="current-password"
-        />
-        <button type="submit">
-          {mode === "cookie"
-            ? "POST /api/auth/login"
-            : "POST /api/auth/jwt/login"}
-        </button>
-      </form>
-
-      {mode === "jwt" && <JwtSessionPanel />}
+      {mode === "jwt" && (isJwtUser ? <JwtSessionPanel /> : <NotLoggedIn />)}
 
       <div className="row">
         {/* cookie или Bearer — обе схемы; ни того ни другого → 401 */}
@@ -98,14 +39,33 @@ export function HomePage() {
         <button onClick={() => request("/api/ping").then(setResult)}>
           GET /api/ping
         </button>
+        {mode === "jwt" && (
+          <button onClick={parallel}>3 запроса параллельно</button>
+        )}
       </div>
 
-      {result && (
-        <pre>
-          {`HTTP ${result.status}\n`}
-          {JSON.stringify(result.body, null, 2)}
-        </pre>
-      )}
+      {result !== null && <ResultView result={result} />}
     </>
+  );
+}
+
+function NotLoggedIn() {
+  return (
+    <section className="card">
+      <p className="muted">
+        Нет JWT-сессии. <Link to="/login">Войти →</Link>
+      </p>
+    </section>
+  );
+}
+
+function ResultView({ result }: { result: unknown }) {
+  const api = result as ApiResult;
+  return (
+    <pre>
+      {typeof api?.status === "number"
+        ? `HTTP ${api.status}\n${JSON.stringify(api.body, null, 2)}`
+        : JSON.stringify(result, null, 2)}
+    </pre>
   );
 }

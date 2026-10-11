@@ -32,3 +32,5 @@ pre { padding: 12px; border: 1px solid #8884; border-radius: 6px; overflow-x: au
 .props dd { margin: 0; word-break: break-all; }
 .ok { color: #2e8b57; }
 .warn { color: #d9822b; }
+.spinner::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 6px; vertical-align: -1px; border: 2px solid currentColor; border-right-color: transparent; border-radius: 50%; animation: spin 0.7s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }

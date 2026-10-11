@@ -1,4 +1,4 @@
-import { authGet } from "../auth/authFetch";
+import { apiFetch } from "./http";
 import type { ApiResult, Envelope } from "./client";
 
 // Ответ GET /api/users/me (UserProfileResponse на бэке)
@@ -15,7 +15,7 @@ export type UserProfile = {
 export type GetUserResult = ApiResult & { profile: UserProfile | null };
 
 export async function getUser(): Promise<GetUserResult> {
-  const res = await authGet("/api/users/me");
+  const res = await apiFetch("/api/users/me");
   const profile =
     res.status === 200 ? (res.body as Envelope<UserProfile>).result : null;
   return { ...res, profile };

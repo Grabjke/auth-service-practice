@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using AuthPractice.Core.Auth;
+using AuthPractice.Core.Auth.RefreshTokens;
 using AuthPractice.Domain.Users;
 using AuthPractice.Infrastructure.Database;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -106,6 +107,17 @@ public static class DependencyInjectionAuthExtensions
 
         services.TryAddSingleton(TimeProvider.System);
         services.AddSingleton<IJwtTokenService, JwtTokenService>();
+
+        // Refresh-токены: секция "RefreshToken" → IOptions<RefreshTokenOptions>
+        services.AddOptions<RefreshTokenOptions>()
+            .BindConfiguration(RefreshTokenOptions.SectionName)
+            .ValidateDataAnnotations()
+            .Validate(
+                o => o.FamilyLifetimeDays >= o.LifetimeDays,
+                "RefreshToken:FamilyLifetimeDays не может быть меньше LifetimeDays")
+            .ValidateOnStart();
+        services.AddScoped<RefreshTokenCookie>();
+        services.AddScoped<RefreshSessionManager>();
 
         return services;
     }

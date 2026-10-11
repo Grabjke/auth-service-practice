@@ -14,8 +14,9 @@ public sealed class JwtOptions
     [Required]
     public string Audience { get; init; } = null!;
 
-    // JWT нельзя отозвать до exp → короткое окно после смены пароля / угона токена
-    [Range(1, 30)]
+    // Access нельзя отозвать до exp → его TTL и есть окно полезности украденного токена.
+    // Долгую сессию держит refresh-токен, поэтому access — минуты
+    [Range(1, 15)]
     public int ExpireMinutes { get; init; }
 
     // HS256 = HMAC-SHA256: ключ не короче выхода хеша (32 байта), иначе подпись упадёт в рантайме

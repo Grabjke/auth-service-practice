@@ -1,20 +1,21 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "react-router";
 import { getUser, type GetUserResult } from "../api/users";
-import { useAuthMode, useAuthStore } from "../auth/authStore";
+import { useAuthMode, useCurrentUser } from "../auth/authStore";
 
 // Профиль текущего пользователя — GET /api/users/me
 export function ProfilePage() {
   const mode = useAuthMode();
-  const accessToken = useAuthStore((s) => s.accessToken);
+  // id, а не сам access: тихий refresh меняет токен, но это тот же пользователь — перезапрос не нужен
+  const userId = useCurrentUser()?.id ?? null;
   const [reloadKey, setReloadKey] = useState(0);
   // Ответ запоминаем вместе с ключом запроса: «загрузка» = ответ ещё не для текущего ключа
   const [loaded, setLoaded] = useState<{ key: string; res: GetUserResult } | null>(null);
-  const requestKey = `${mode}|${accessToken}|${reloadKey}`;
+  const requestKey = `${mode}|${userId}|${reloadKey}`;
   const loading = loaded?.key !== requestKey;
   const state = loaded?.res ?? null;
 
-  // Перезапрашиваем при смене схемы / токена (новый вход, «испорченная» подпись, выход) и по кнопке
+  // Перезапрашиваем при смене схемы / пользователя (вход, выход) и по кнопке
   useEffect(() => {
     let cancelled = false;
     getUser().then((res) => {
@@ -43,7 +44,7 @@ export function ProfilePage() {
               ? "Вы не вошли в аккаунт"
               : "Не удалось загрузить профиль"}
           </p>
-          <Link to="/">Войти →</Link>
+          <Link to="/login">Войти →</Link>
         </section>
       )}
 

@@ -7,7 +7,8 @@ export function JwtSessionPanel() {
   const expiresAt = useAuthStore((s) => s.expiresAt);
   const payload = useAuthStore((s) => s.payload);
   const tamperToken = useAuthStore((s) => s.tamperToken);
-  const logout = useAuthStore((s) => s.logout);
+  const dropAccessToken = useAuthStore((s) => s.dropAccessToken);
+  const refreshCount = useAuthStore((s) => s.refreshCount);
   const now = useNow();
 
   if (!accessToken || !expiresAt) {
@@ -29,14 +30,18 @@ export function JwtSessionPanel() {
       <p className="muted">
         {secondsLeft > 0
           ? `Истекает через ${formatSeconds(secondsLeft)} (${new Date(expiresAt).toLocaleTimeString()})`
-          : "Истёк — бэк ответит 401 (ClockSkew = 0)"}
+          : "Истёк — следующий запрос получит 401 и тихо обновит access"}
+        {` · обращений к /refresh: ${refreshCount}`}
       </p>
       <code className="token">{accessToken}</code>
       {/* Подпись НЕ проверяется на клиенте: claims видны всем, как на jwt.io */}
       <pre>{JSON.stringify(payload, null, 2)}</pre>
       <div className="row">
+        {/* Оба сценария дают 401 → перехватчик сам сходит в /refresh и повторит запрос */}
         <button onClick={tamperToken}>Испортить подпись</button>
-        <button onClick={logout}>Забыть токен</button>
+        <button onClick={dropAccessToken}>
+          Сбросить access (как после перезагрузки)
+        </button>
       </div>
     </section>
   );

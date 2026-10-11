@@ -24,8 +24,14 @@ client/                        — React (Vite + TS)
   `POST /api/auth/jwt/login` → `{ accessToken, expiresAt }` (без Set-Cookie), дальше `Authorization: Bearer <token>`.
   Cookie остаётся default-схемой: `RequireAuthorization()` без схем — только cookie;
   `/api/auth/me` и политика `AdminOnly` пускают обе (`AuthSchemes.CookieOrBearer`).
-  HS256, `ExpireMinutes` ≤ 30, `ClockSkew = 0`, claims: `sub, iss, aud, exp, iat, nbf, jti, name, email, security_stamp, role`.
-  Refresh-токенов пока нет — отозвать JWT до `exp` нельзя.
+  HS256, `ExpireMinutes` ≤ 15, `ClockSkew = 0`, claims: `sub, iss, aud, exp, iat, nbf, jti, name, email, security_stamp, role`.
+- Refresh-токены (ветка `practice/refresh-tokens`): access живёт 3 минуты, refresh — 7 дней (но вход целиком — не дольше 30 дней) в HttpOnly-cookie
+  (`Secure`, `SameSite=Strict`, `Path=/api/auth/jwt`), в БД (`auth.refresh_sessions`) — только SHA-256-хэш.
+  `POST /api/auth/jwt/refresh` — ротация в одной транзакции под `SELECT ... FOR UPDATE`;
+  повтор уже погашенного токена = кража → отзыв всей семьи (`family_id`) и 401.
+  Повтор в течение 10 с после ротации — гонка вкладок → 409 без отзыва. `POST /api/auth/jwt/logout` — отзыв всей семьи (входа) + очистка cookie.
+  Фронт: `apiFetch` ловит 401 → один общий `/refresh` (single-flight) → повтор запроса; после перезагрузки access
+  восстанавливается тихим `/refresh`.
 - `UserScopeData` (Core/Auth, Scoped) — текущий пользователь запроса для хендлеров через DI.
   Заполняет `UserScopeDataMiddleware` (между `UseAuthentication` и `UseAuthorization`): cookie из `HttpContext.User`,
   иначе явно `AuthenticateAsync(Bearer)`. `HttpContext.User` не подменяется. `GET /api/users/me` — профиль
@@ -61,6 +67,7 @@ docker compose up --build
 - Swagger: http://localhost:8080/swagger
 - Postgres: localhost:5432 (`postgres`/`postgres`, БД `auth_practice`, схема `identity`).
   Миграции `AppIdentityDbContext` накатываются при старте бэка.
+  Имена в БД — snake_case (`UseSnakeCaseNamingConvention`): колонки, PK/FK, индексы, таблица истории миграций.
 
 Новая миграция:
 

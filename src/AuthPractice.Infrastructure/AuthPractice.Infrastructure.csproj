@@ -12,6 +12,8 @@
          Приходит транзитивно с JwtBearer, указываем явно, т.к. используем напрямую -->
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.0.1" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <!-- UseSnakeCaseNamingConvention: колонки, ключи, индексы, FK → snake_case (access_failed_count, pk_users, ...) -->
+    <PackageReference Include="EFCore.NamingConventions" Version="9.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AuthPractice.Core\AuthPractice.Core.csproj" />
